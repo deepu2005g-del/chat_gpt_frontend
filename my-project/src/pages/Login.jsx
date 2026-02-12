@@ -35,6 +35,7 @@ const Login = () => {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('token_type', data.token_type);
+        localStorage.setItem('user_email', cleanEmail);
 
         console.log('Success!');
         window.location.href = '/dashboard';

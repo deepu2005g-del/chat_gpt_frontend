@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AskAI from './AskAI';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -19,9 +20,16 @@ const Dashboard = () => {
   }, [navigate]);
 
   const handleLogout = () => {
+    // Clear user-specific chat history before removing email
+    const userEmail = localStorage.getItem('user_email');
+    if (userEmail) {
+      localStorage.removeItem(`ai_chats_${userEmail}`);
+      localStorage.removeItem(`ai_active_chat_${userEmail}`);
+    }
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('token_type');
+    localStorage.removeItem('user_email');
     navigate('/login');
   };
 
@@ -56,7 +64,7 @@ const Dashboard = () => {
       )
     },
     {
-      id: 'ask-ai', label: 'Ask AI', route: '/ask-ai', icon: (
+      id: 'ask-ai', label: 'Ask AI', icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
         </svg>
@@ -225,119 +233,125 @@ const Dashboard = () => {
 
         {/* Dashboard Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl">{stat.icon}</span>
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${stat.up
-                    ? 'bg-emerald-50 text-emerald-600'
-                    : 'bg-red-50 text-red-600'
-                    }`}>
-                    {stat.change}
-                  </span>
-                </div>
-                <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stat.value}</h3>
-                <p className="text-sm text-gray-500 mt-1 font-medium">{stat.label}</p>
-                <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          {activeTab === 'dashboard' && (
+            <>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                {stats.map((stat, index) => (
                   <div
-                    className={`h-full rounded-full bg-gradient-to-r ${stat.color} transition-all duration-1000 group-hover:w-full`}
-                    style={{ width: `${60 + index * 10}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Welcome Banner */}
-          <div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-700 rounded-2xl shadow-xl p-8 text-white mb-8 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djZoLTZWMzRoNnptMC0xMHY2aC02VjI0aDZ6bTAtMTB2Nkg4VjE0aDZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50"></div>
-            <div className="relative z-10">
-              <h3 className="text-2xl md:text-3xl font-bold mb-2">Your Session is Active 🚀</h3>
-              <p className="text-indigo-100 max-w-lg text-sm md:text-base leading-relaxed">
-                You're authenticated and ready to go. Access all your protected resources, manage your projects, and track your performance metrics from this dashboard.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <button className="bg-white text-indigo-600 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-50 transition-all duration-200 shadow-lg shadow-black/10 hover:shadow-xl">
-                  View Reports
-                </button>
-                <button className="bg-white/10 backdrop-blur border border-white/20 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-white/20 transition-all duration-200">
-                  Quick Actions
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Recent Activity */}
-            <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">Recent Activity</h3>
-                  <p className="text-sm text-gray-500">Latest actions from your team</p>
-                </div>
-                <button className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 transition-colors">View All</button>
-              </div>
-              <div className="divide-y divide-gray-50">
-                {recentActivity.map((item, index) => (
-                  <div key={index} className="flex items-center gap-4 p-5 hover:bg-gray-50/50 transition-colors">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md ${item.status === 'success' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600' :
-                      item.status === 'warning' ? 'bg-gradient-to-br from-amber-400 to-amber-600' :
-                        'bg-gradient-to-br from-blue-400 to-blue-600'
-                      }`}>
-                      {item.avatar}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800">{item.user}</p>
-                      <p className="text-xs text-gray-500 truncate">{item.action}</p>
-                    </div>
-                    <span className="text-xs text-gray-400 whitespace-nowrap font-medium">{item.time}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Projects */}
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="text-lg font-bold text-gray-800">Active Projects</h3>
-                <p className="text-sm text-gray-500">Track project progress</p>
-              </div>
-              <div className="p-4 space-y-4">
-                {projects.map((project, index) => (
-                  <div key={index} className="p-4 rounded-xl border border-gray-100 hover:border-indigo-200 hover:shadow-sm transition-all duration-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-bold text-gray-800">{project.name}</h4>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${project.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
-                        project.status === 'Review' ? 'bg-amber-50 text-amber-600' :
-                          'bg-blue-50 text-blue-600'
+                    key={index}
+                    className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-2xl">{stat.icon}</span>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${stat.up
+                        ? 'bg-emerald-50 text-emerald-600'
+                        : 'bg-red-50 text-red-600'
                         }`}>
-                        {project.status}
+                        {stat.change}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
+                    <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stat.value}</h3>
+                    <p className="text-sm text-gray-500 mt-1 font-medium">{stat.label}</p>
+                    <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${project.progress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' :
-                          project.progress >= 75 ? 'bg-gradient-to-r from-indigo-400 to-indigo-500' :
-                            'bg-gradient-to-r from-blue-400 to-blue-500'
-                          }`}
-                        style={{ width: `${project.progress}%` }}
+                        className={`h-full rounded-full bg-gradient-to-r ${stat.color} transition-all duration-1000 group-hover:w-full`}
+                        style={{ width: `${60 + index * 10}%` }}
                       ></div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 font-medium">{project.progress}% complete</span>
-                      <span className="text-xs text-gray-400">{project.team} members</span>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
+
+              {/* Welcome Banner */}
+              <div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-700 rounded-2xl shadow-xl p-8 text-white mb-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djZoLTZWMzRoNnptMC0xMHY2aC02VjI0aDZ6bTAtMTB2Nkg4VjE0aDZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50"></div>
+                <div className="relative z-10">
+                  <h3 className="text-2xl md:text-3xl font-bold mb-2">Your Session is Active 🚀</h3>
+                  <p className="text-indigo-100 max-w-lg text-sm md:text-base leading-relaxed">
+                    You're authenticated and ready to go. Access all your protected resources, manage your projects, and track your performance metrics from this dashboard.
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <button className="bg-white text-indigo-600 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-50 transition-all duration-200 shadow-lg shadow-black/10 hover:shadow-xl">
+                      View Reports
+                    </button>
+                    <button className="bg-white/10 backdrop-blur border border-white/20 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-white/20 transition-all duration-200">
+                      Quick Actions
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* Recent Activity */}
+                <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800">Recent Activity</h3>
+                      <p className="text-sm text-gray-500">Latest actions from your team</p>
+                    </div>
+                    <button className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 transition-colors">View All</button>
+                  </div>
+                  <div className="divide-y divide-gray-50">
+                    {recentActivity.map((item, index) => (
+                      <div key={index} className="flex items-center gap-4 p-5 hover:bg-gray-50/50 transition-colors">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md ${item.status === 'success' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600' :
+                          item.status === 'warning' ? 'bg-gradient-to-br from-amber-400 to-amber-600' :
+                            'bg-gradient-to-br from-blue-400 to-blue-600'
+                          }`}>
+                          {item.avatar}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-800">{item.user}</p>
+                          <p className="text-xs text-gray-500 truncate">{item.action}</p>
+                        </div>
+                        <span className="text-xs text-gray-400 whitespace-nowrap font-medium">{item.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Projects */}
+                <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="p-6 border-b border-gray-100">
+                    <h3 className="text-lg font-bold text-gray-800">Active Projects</h3>
+                    <p className="text-sm text-gray-500">Track project progress</p>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    {projects.map((project, index) => (
+                      <div key={index} className="p-4 rounded-xl border border-gray-100 hover:border-indigo-200 hover:shadow-sm transition-all duration-200">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-sm font-bold text-gray-800">{project.name}</h4>
+                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${project.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                            project.status === 'Review' ? 'bg-amber-50 text-amber-600' :
+                              'bg-blue-50 text-blue-600'
+                            }`}>
+                            {project.status}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${project.progress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' :
+                              project.progress >= 75 ? 'bg-gradient-to-r from-indigo-400 to-indigo-500' :
+                                'bg-gradient-to-r from-blue-400 to-blue-500'
+                              }`}
+                            style={{ width: `${project.progress}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500 font-medium">{project.progress}% complete</span>
+                          <span className="text-xs text-gray-400">{project.team} members</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'ask-ai' && <AskAI />}
         </div>
       </main>
     </div>

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import './App.css'
 import Home from './pages/Home'
 import About from './pages/About'
@@ -12,9 +12,12 @@ import AskAI from './pages/AskAI'
 
 
 function App() {
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/ask-ai');
+
   return (
-    <Router>
-      <Header />
+    <>
+      {!isDashboard && <Header />}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -25,8 +28,9 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/ask-ai" element={<AskAI />} />
       </Routes>
-      <Footer />
-    </Router>
+
+      {!isDashboard && <Footer />}
+    </>
   )
 }
 
