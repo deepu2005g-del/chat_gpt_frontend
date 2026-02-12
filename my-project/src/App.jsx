@@ -7,6 +7,8 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Dashboard from './pages/Dashboard'
+import AskAI from './pages/AskAI'
 
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/ask-ai" element={<AskAI />} />
       </Routes>
       <Footer />
     </Router>

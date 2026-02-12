@@ -23,9 +23,9 @@ const Login = () => {
         },
         // FIX 2: Some backends expect 'username' even if it's an email.
         // We send both to be safe, or you can change 'email' to 'username' below.
-        body: JSON.stringify({ 
-          email: cleanEmail, 
-          password: password 
+        body: JSON.stringify({
+          email: cleanEmail,
+          password: password
         }),
       });
 
@@ -35,14 +35,13 @@ const Login = () => {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('token_type', data.token_type);
-        
+
         console.log('Success!');
-        alert('Login Successful');
-        // window.location.href = '/dashboard'; 
+        window.location.href = '/dashboard';
       } else {
         // FIX 3: Check if data.detail is an array (Common in FastAPI validation errors)
-        const errorMessage = typeof data.detail === 'string' 
-          ? data.detail 
+        const errorMessage = typeof data.detail === 'string'
+          ? data.detail
           : 'Invalid credentials or server error';
         setError(errorMessage);
       }
