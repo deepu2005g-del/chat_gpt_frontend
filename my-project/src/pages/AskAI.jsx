@@ -238,7 +238,7 @@ const AskAI = () => {
                                 </svg>
                                 <div className="flex-1 min-w-0">
                                     <p className="truncate font-medium text-xs">{chat.title}</p>
-                                    <p className="text-[10px] text-slate-500">{chat.messages.length} messages • {formatDate(chat.createdAt)}</p>
+                                    <p className="text-[10px] text-slate-500">{chat.messages.length} messages • {formatDate(chat.created_at)}</p>
                                 </div>
                                 <button
                                     onClick={(e) => handleDeleteChat(chat.id, e)}
