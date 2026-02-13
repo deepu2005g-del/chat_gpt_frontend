@@ -15,7 +15,7 @@ const Login = () => {
     const cleanEmail = email.trim();
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ const Login = () => {
         setError(errorMessage);
       }
     } catch (err) {
-      setError('Connection refused. Check if your backend is running at http://127.0.0.1:8000');
+      setError(`Connection refused. Check if your backend is running at ${import.meta.env.VITE_API_BASE}`);
     } finally {
       setLoading(false);
     }

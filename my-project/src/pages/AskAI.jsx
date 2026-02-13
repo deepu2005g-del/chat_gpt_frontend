@@ -20,7 +20,7 @@ const AskAI = () => {
     // Fetch chats on mount
     useEffect(() => {
         if (token) {
-            fetch('http://127.0.0.1:8000/chats/', {
+            fetch(`${import.meta.env.VITE_API_BASE}/chats/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
                 .then(res => {
@@ -45,7 +45,7 @@ const AskAI = () => {
     const handleNewChat = async () => {
         setLoading(true);
         try {
-            const res = await fetch('http://127.0.0.1:8000/chats/', {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE}/chats/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ const AskAI = () => {
     const handleDeleteChat = async (chatId, e) => {
         e.stopPropagation();
         try {
-            const res = await fetch(`http://127.0.0.1:8000/chats/${chatId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE}/chats/${chatId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -104,7 +104,7 @@ const AskAI = () => {
         if (!currentChatId) {
             setLoading(true);
             try {
-                const res = await fetch('http://127.0.0.1:8000/chats/', {
+                const res = await fetch(`${import.meta.env.VITE_API_BASE}/chats/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ const AskAI = () => {
         );
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/chats/${currentChatId}/ask`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE}/chats/${currentChatId}/ask`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
